@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VEST Games - PS5 Dashboard</title>
+    <title>VEST Games - PS5 Interface</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
     <style>
         :root {
             --brand-left: #9b2cac;
             --brand-right: #d1369a;
+            --ps5-curve: cubic-bezier(0.19, 1, 0.22, 1);
         }
 
         body {
@@ -25,112 +26,159 @@
             -webkit-user-select: none;
         }
 
-        /* Branding Gradient */
-        .brand-text {
-            background: linear-gradient(to right, var(--brand-left), var(--brand-right));
+        /* --- PS5 STARTUP ANIMATIONS --- */
+        #splash-screen {
+            z-index: 9999;
+            background-color: #000;
+            transition: opacity 1.5s ease-out, visibility 1.5s;
+        }
+
+        /* La chispa de luz inicial */
+        .startup-spark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: #fff;
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8), 0 0 50px 15px rgba(50, 150, 255, 0.6);
+            transform: translate(-50%, -50%);
+            animation: spark-ignition 1.5s ease-in-out forwards;
+        }
+
+        .startup-logo {
+            opacity: 0;
+            transform: scale(0.9);
+            animation: logo-reveal 2.5s ease-out 1s forwards;
+            background: linear-gradient(to right, #fff, #e0e0e0);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            background-clip: text;
-            color: transparent; 
-            display: inline-block;
         }
 
-        /* Splash Screen Animations */
-        @keyframes splash-pulse {
-            0%, 100% { filter: drop-shadow(0 0 20px rgba(209, 54, 154, 0.4)); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 40px rgba(155, 44, 172, 0.8)); transform: scale(1.05); }
+        @keyframes spark-ignition {
+            0% { width: 0; opacity: 0; }
+            40% { opacity: 1; height: 2px; width: 100vw; box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.8), 0 0 50px 15px rgba(50, 150, 255, 0.8); }
+            70% { height: 100vh; opacity: 1; background: rgba(50, 150, 255, 0.1); }
+            100% { height: 100vh; width: 100vw; opacity: 0; }
         }
 
-        #splash-screen {
-            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), visibility 1.2s;
-            z-index: 9999;
+        @keyframes logo-reveal {
+            0% { opacity: 0; transform: scale(0.85); filter: blur(10px); }
+            50% { opacity: 1; transform: scale(1); filter: blur(0px); }
+            80% { opacity: 1; transform: scale(1); filter: blur(0px); }
+            100% { opacity: 0; transform: scale(1.05); filter: blur(5px); }
         }
 
-        .splash-logo {
-            animation: splash-pulse 2.5s ease-in-out infinite;
-        }
-
-        /* Background Crossfade & Blur (PS5 Style) */
+        /* --- DYNAMIC BACKGROUND WAVES --- */
         .bg-layer {
-            transition: opacity 0.6s ease-in-out;
+            transition: opacity 1s ease-in-out;
             background-size: cover;
-            background-position: center;
-            filter: blur(8px) brightness(0.5); /* Blurs and darkens the background */
-            transform: scale(1.05); /* Prevents blurred edges from showing background color */
+            background-position: top center;
+            filter: blur(25px) brightness(0.4);
+            transform: scale(1.15); /* Evita bordes borrosos blancos */
+            will-change: opacity;
+        }
+
+        /* Animación suave de luz dorada/azul tipo PS5 de fondo */
+        .ambient-light {
+            position: absolute;
+            inset: -50%;
+            background: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 60%);
+            animation: ambient-drift 15s infinite alternate ease-in-out;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        @keyframes ambient-drift {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(5%, 5%) scale(1.1); }
+            100% { transform: translate(-5%, -2%) scale(0.9); }
         }
 
         #bg-overlay {
-            background: radial-gradient(circle at 50% 100%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.8) 100%);
             pointer-events: none;
         }
 
-        /* Top Menu */
+        /* --- TOP MENU --- */
         .menu-item {
-            opacity: 0.6;
-            transition: all 0.3s;
+            opacity: 0.5;
+            transition: all 0.3s ease;
             position: relative;
+            font-size: 1.1rem;
+            padding-bottom: 4px;
         }
         .menu-item.active {
             opacity: 1;
-            font-weight: 700;
+            font-weight: 600;
         }
         .menu-item.active::after {
             content: '';
             position: absolute;
-            bottom: -6px;
-            left: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
             width: 100%;
             height: 2px;
             background-color: white;
+            box-shadow: 0 0 10px rgba(255,255,255,0.8);
             border-radius: 2px;
         }
 
-        /* Carousel Layout */
+        .icon-btn {
+            opacity: 0.7;
+            transition: opacity 0.2s, transform 0.2s;
+            cursor: pointer;
+        }
+        .icon-btn:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* --- CAROUSEL & TILES --- */
         #carousel-container {
             width: 100vw;
             position: absolute;
-            bottom: 80px; /* Distance from bottom */
+            bottom: 60px; 
             overflow: visible;
         }
 
         #carousel-track {
             display: flex;
             align-items: flex-end;
-            gap: 16px;
-            /* Start padding so the first item centers properly */
+            gap: 20px;
             padding-left: 50vw; 
-            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: transform 0.6s var(--ps5-curve);
             will-change: transform;
         }
 
-        /* Game Tiles (Square like PS5) */
         .game-tile {
-            width: 140px;
-            height: 140px;
-            border-radius: 18px;
+            width: 130px;
+            height: 130px;
+            border-radius: 16px;
             background-size: cover;
             background-position: center;
             background-color: #111;
             flex-shrink: 0;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            transition: all 0.5s var(--ps5-curve);
             position: relative;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            margin-bottom: 20px; /* Space for reflection/shadow */
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            margin-bottom: 30px; 
         }
 
-        /* Unselected tiles are slightly smaller and faded */
         .game-tile:not(.active) {
             transform: scale(0.85);
-            opacity: 0.5;
+            opacity: 0.4;
+            filter: grayscale(30%);
         }
 
-        /* Active Tile State */
         .game-tile.active {
-            transform: scale(1) translateY(-10px);
+            transform: scale(1) translateY(-15px);
             opacity: 1;
             z-index: 10;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.1);
+            filter: grayscale(0%);
         }
         
         .game-tile.active::after {
@@ -138,95 +186,131 @@
             position: absolute;
             inset: -4px;
             border: 3px solid #fff;
-            border-radius: 22px;
+            border-radius: 20px;
             pointer-events: none;
-            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
         }
 
-        /* Info Section Animations */
+        /* --- GAME INFO SECTION --- */
         #game-info {
-            transition: opacity 0.3s, transform 0.3s;
             position: absolute;
-            bottom: 260px; /* Above the carousel */
-            left: 50vw; /* Center horizontally */
-            transform: translateX(-50%);
-            width: 100%;
-            text-align: center;
+            bottom: 250px; 
+            left: 80px; /* Alineado a la izquierda como PS5 */
+            width: auto;
+            text-align: left;
+            z-index: 20;
         }
 
-        .fade-in-up {
-            animation: fadeInUp 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        .badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.15);
+            backdrop-filter: blur(10px);
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.4s var(--ps5-curve);
         }
 
-        @keyframes fadeInUp {
-            0% { opacity: 0; transform: translateY(15px) translateX(-50%); }
-            100% { opacity: 1; transform: translateY(0) translateX(-50%); }
+        #game-title {
+            opacity: 0;
+            transform: translateX(-30px);
+            transition: all 0.5s var(--ps5-curve) 0.1s;
         }
 
-        /* Play Button */
+        #play-btn {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.4s var(--ps5-curve) 0.2s;
+        }
+
+        /* Animación de entrada activa */
+        #game-info.active-info .badge,
+        #game-info.active-info #game-title,
+        #game-info.active-info #play-btn {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* Play Button Estilo PS5 */
         .play-btn {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.2s;
-            margin: 0 auto;
+            background: #fff;
+            color: #000;
+            border: none;
+            transition: all 0.2s ease;
         }
 
-        .play-btn:hover, .play-btn:focus {
-            background: white;
-            color: black;
-            transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(255,255,255,0.3);
-            outline: none;
+        .play-btn:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 0 20px rgba(255,255,255,0.4);
+            background: #e0e0e0;
+        }
+        
+        .play-btn:active {
+            transform: scale(0.95) !important;
         }
     </style>
 </head>
 <body>
 
-    <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center">
-        <div class="flex items-center gap-4">
-            <h1 class="text-6xl md:text-8xl font-black tracking-tighter splash-logo brand-text">VEST</h1>
-            <h1 class="text-6xl md:text-8xl font-black tracking-tighter splash-logo text-white">Games</h1>
+    <!-- PS5 Cinematic Splash Screen -->
+    <div id="splash-screen" class="fixed inset-0 flex items-center justify-center">
+        <div class="startup-spark"></div>
+        <div class="flex items-center gap-4 startup-logo">
+            <svg class="w-16 h-16 fill-current" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5v-9l6 4.5-6 4.5z"/>
+            </svg>
+            <h1 class="text-5xl md:text-7xl font-black tracking-tighter">VEST Games</h1>
         </div>
     </div>
 
     <div id="app-container" class="relative w-full h-screen">
         
-        <!-- Dynamic Backgrounds -->
+        <!-- Dynamic Backgrounds & Ambient Light -->
         <div id="bg-1" class="bg-layer absolute inset-0 opacity-100"></div>
         <div id="bg-2" class="bg-layer absolute inset-0 opacity-0"></div>
-        <div id="bg-overlay" class="absolute inset-0 z-10"></div>
+        <div class="ambient-light"></div>
+        <div id="bg-overlay" class="absolute inset-0"></div>
 
         <!-- Top Bar (PS5 Style Menu) -->
-        <div class="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-20">
-            <!-- Left Side: Games/Media -->
-            <div class="flex items-center gap-8 ml-8">
-                <span class="text-xl font-bold brand-text drop-shadow-lg tracking-tight">VEST</span>
-                <div class="flex gap-6 text-lg font-medium text-white">
+        <div class="absolute top-0 left-0 w-full p-10 flex justify-between items-center z-20">
+            <!-- Left Side -->
+            <div class="flex items-center gap-12 ml-6">
+                <div class="flex gap-8 text-white">
                     <span class="menu-item active cursor-pointer">Juegos</span>
                     <span class="menu-item cursor-pointer">Multimedia</span>
                 </div>
             </div>
             
-            <!-- Right Side: Utils & Time -->
-            <div class="flex items-center gap-6 mr-8 text-white/90">
-                <!-- Search Icon -->
-                <svg class="w-6 h-6 hover:text-white cursor-pointer transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <!-- Settings Icon -->
-                <svg class="w-6 h-6 hover:text-white cursor-pointer transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                <!-- Avatar -->
-                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#9b2cac] to-[#d1369a] border border-white/50 cursor-pointer"></div>
+            <!-- Right Side (System Icons) -->
+            <div class="flex items-center gap-7 mr-6 text-white">
+                <!-- Network -->
+                <svg class="w-5 h-5 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z"></path></svg>
+                <!-- Controller Battery -->
+                <svg class="w-6 h-6 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 10.5h.375c.621 0 1.125.504 1.125 1.125v2.25c0 .621-.504 1.125-1.125 1.125H21M4.5 10.5h15v3h-15v-3z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M6 12h3"></path></svg>
+                <!-- Search -->
+                <svg class="w-6 h-6 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"></path></svg>
+                <!-- Settings -->
+                <svg class="w-6 h-6 icon-btn" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.398.165-.71.505-.78.929l-.15.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 <!-- Clock -->
                 <div id="clock" class="text-xl font-medium tracking-wide">00:00</div>
+                <!-- Avatar -->
+                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-[#9b2cac] to-[#d1369a] border-2 border-white/30 cursor-pointer icon-btn shadow-lg"></div>
             </div>
         </div>
 
-        <div id="game-info" class="z-20 pointer-events-auto">
-            <h2 id="game-title" class="text-4xl md:text-5xl font-bold mb-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-white tracking-tight">
+        <!-- Info Section (Left Aligned) -->
+        <div id="game-info">
+            <div class="badge">VEST Console Edition</div>
+            <h2 id="game-title" class="text-5xl md:text-7xl font-bold mb-8 drop-shadow-2xl text-white tracking-tight">
                 Cargando...
             </h2>
-            <button id="play-btn" class="play-btn text-white px-12 py-3 rounded-full font-semibold text-lg flex items-center justify-center gap-3">
-                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <button id="play-btn" class="play-btn px-10 py-3.5 rounded-full font-bold text-lg flex items-center gap-3">
                 Jugar
             </button>
         </div>
@@ -239,7 +323,6 @@
     </div>
 
     <script>
-        // Array of games with REAL images (Steam CDN, Wikipedia Commons, etc.)
         const games = [
             { title: "BO1 Zombies", url: "https://vel.gg/bo1z", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/42700/header.jpg" },
             { title: "Moon", url: "https://moon-zombies.pages.dev", img: "https://upload.wikimedia.org/wikipedia/en/0/0c/Call_of_Duty_Black_Ops_box_art.png" },
@@ -323,20 +406,23 @@
 
             const game = games[activeIndex];
 
-            infoContainer.classList.remove('fade-in-up');
-            void infoContainer.offsetWidth; // Trigger DOM reflow
+            // Re-trigger slide-in animation for title and button
+            infoContainer.classList.remove('active-info');
             
-            titleEl.innerText = game.title;
-            infoContainer.classList.add('fade-in-up');
-
-            updateBackground(game);
-            centerTrack();
+            // Wait a tiny frame before re-adding class for animation to reset
+            setTimeout(() => {
+                titleEl.innerText = game.title;
+                infoContainer.classList.add('active-info');
+                updateBackground(game);
+                centerTrack();
+            }, 50);
         }
 
         function centerTrack() {
             const activeTile = document.getElementById(`tile-${activeIndex}`);
             if (!activeTile) return;
 
+            // En PS5 el carrusel se centra en la pantalla
             const screenCenter = window.innerWidth / 2;
             const tileCenterOffset = activeTile.offsetLeft + (activeTile.offsetWidth / 2);
             const translateX = screenCenter - tileCenterOffset;
@@ -361,7 +447,6 @@
         function launchGame(url) {
             const windowWidth = 1024;
             const windowHeight = 768;
-            
             const left = (screen.width / 2) - (windowWidth / 2);
             const top = (screen.height / 2) - (windowHeight / 2);
             
@@ -395,8 +480,11 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             initCarousel();
+            // Evitar animaciones extrañas en la carga
+            track.style.transition = 'none';
             setFocus(0); 
             
+            // PS5 Startup Timing (Ligeramente más largo para la cinemática)
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
                 splash.style.opacity = '0';
@@ -404,12 +492,13 @@
                 setTimeout(() => {
                     splash.style.visibility = 'hidden';
                     splash.style.pointerEvents = 'none';
+                    track.style.transition = 'transform 0.6s var(--ps5-curve)'; // Restaurar transición
                     isAppReady = true;
                     centerTrack();
-                }, 1200);
-            }, 3000); 
+                    infoContainer.classList.add('active-info');
+                }, 1500); // Tiempo que tarda el fade-out del splash
+            }, 3800); // Tiempo total de la animación de inicio
         });
     </script>
 </body>
 </html>
-```<FollowUp>¿Hay algún otro juego que quieras agregar a la lista o algún detalle visual adicional que te gustaría probar en el menú?</FollowUp>
