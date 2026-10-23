@@ -236,14 +236,6 @@
                 <!-- Tiles injected via JS -->
             </div>
         </div>
-        
-        <!-- Iframe Overlay Container -->
-        <div id="iframe-overlay" class="hidden absolute inset-0 z-[10000] bg-black">
-            <button id="close-iframe" class="absolute top-6 right-6 z-50 text-white bg-white/10 hover:bg-white/30 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full font-bold transition">
-                Cerrar Juego
-            </button>
-            <iframe id="game-iframe" src="" class="w-full h-full border-none"></iframe>
-        </div>
     </div>
 
     <script>
@@ -286,11 +278,6 @@
         const bg1 = document.getElementById('bg-1');
         const bg2 = document.getElementById('bg-2');
         const infoContainer = document.getElementById('game-info');
-        
-        // Elementos del Iframe
-        const iframeOverlay = document.getElementById('iframe-overlay');
-        const gameIframe = document.getElementById('game-iframe');
-        const closeIframeBtn = document.getElementById('close-iframe');
 
         function updateClock() {
             const now = new Date();
@@ -309,10 +296,8 @@
                 const tile = document.createElement('div');
                 tile.className = 'game-tile';
                 tile.id = `tile-${index}`;
-                // Set the real game image
                 tile.style.backgroundImage = `url('${game.img}')`;
                 
-                // Click to focus or play
                 tile.addEventListener('click', () => {
                     if (!isAppReady) return;
                     if (activeIndex === index) {
@@ -338,7 +323,6 @@
 
             const game = games[activeIndex];
 
-            // Re-trigger info animation
             infoContainer.classList.remove('fade-in-up');
             void infoContainer.offsetWidth; // Trigger DOM reflow
             
@@ -353,18 +337,14 @@
             const activeTile = document.getElementById(`tile-${activeIndex}`);
             if (!activeTile) return;
 
-            // Center calculation considering viewport and tile dimensions
             const screenCenter = window.innerWidth / 2;
-            // Get the center of the tile relative to its parent track container
             const tileCenterOffset = activeTile.offsetLeft + (activeTile.offsetWidth / 2);
-            // Translate the track leftward to align tile center with screen center
             const translateX = screenCenter - tileCenterOffset;
 
             track.style.transform = `translateX(${translateX}px)`;
         }
 
         function updateBackground(game) {
-            // Apply real game image to background
             if (activeBgLayer === 1) {
                 bg2.style.backgroundImage = `url('${game.img}')`;
                 bg2.style.opacity = '1';
@@ -379,25 +359,23 @@
         }
 
         function launchGame(url) {
-            // Se proyecta la página en el iframe en lugar de una nueva pestaña
-            gameIframe.src = url;
-            iframeOverlay.classList.remove('hidden');
+            const windowWidth = 1024;
+            const windowHeight = 768;
+            
+            const left = (screen.width / 2) - (windowWidth / 2);
+            const top = (screen.height / 2) - (windowHeight / 2);
+            
+            const windowFeatures = `width=${windowWidth},height=${windowHeight},top=${top},left=${left},menubar=no,toolbar=no,location=no,status=no,resizable=yes,scrollbars=no`;
+            
+            window.open(url, '_blank', windowFeatures);
         }
-
-        // Lógica para cerrar el Iframe
-        closeIframeBtn.addEventListener('click', () => {
-            gameIframe.src = '';
-            iframeOverlay.classList.add('hidden');
-        });
 
         playBtn.addEventListener('click', () => {
             if(isAppReady) launchGame(games[activeIndex].url);
         });
 
-        // Left/Right arrow key navigation (Crucial Requirement)
         document.addEventListener('keydown', (e) => {
-            // Evitar mover el carrusel si el iframe está abierto
-            if (!isAppReady || !iframeOverlay.classList.contains('hidden')) return;
+            if (!isAppReady) return;
 
             if (e.key === 'ArrowRight') {
                 e.preventDefault();
@@ -417,10 +395,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             initCarousel();
-            // Initially render focus instantly without transitions messing up
             setFocus(0); 
             
-            // Splash Screen timing
             setTimeout(() => {
                 const splash = document.getElementById('splash-screen');
                 splash.style.opacity = '0';
@@ -429,10 +405,11 @@
                     splash.style.visibility = 'hidden';
                     splash.style.pointerEvents = 'none';
                     isAppReady = true;
-                    centerTrack(); // Ensure centered after layout locks in
+                    centerTrack();
                 }, 1200);
             }, 3000); 
         });
     </script>
 </body>
 </html>
+```<FollowUp>¿Hay algún otro juego que quieras agregar a la lista o algún detalle visual adicional que te gustaría probar en el menú?</FollowUp>
