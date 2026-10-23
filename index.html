@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VEST Games - PS5 Dashboard</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --brand-left: #9b2cac;
+            --brand-right: #d1369a;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* Branding Gradient */
+        .brand-text {
+            background: linear-gradient(to right, var(--brand-left), var(--brand-right));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent; 
+            display: inline-block;
+        }
+
+        /* Splash Screen Animations */
+        @keyframes splash-pulse {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(209, 54, 154, 0.4)); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 40px rgba(155, 44, 172, 0.8)); transform: scale(1.05); }
+        }
+
+        #splash-screen {
+            transition: opacity 1.2s cubic-bezier(0.25, 1, 0.5, 1), visibility 1.2s;
+            z-index: 9999;
+        }
+
+        .splash-logo {
+            animation: splash-pulse 2.5s ease-in-out infinite;
+        }
+
+        /* Background Crossfade & Blur (PS5 Style) */
+        .bg-layer {
+            transition: opacity 0.6s ease-in-out;
+            background-size: cover;
+            background-position: center;
+            filter: blur(8px) brightness(0.5); /* Blurs and darkens the background */
+            transform: scale(1.05); /* Prevents blurred edges from showing background color */
+        }
+
+        #bg-overlay {
+            background: radial-gradient(circle at 50% 100%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+            pointer-events: none;
+        }
+
+        /* Top Menu */
+        .menu-item {
+            opacity: 0.6;
+            transition: all 0.3s;
+            position: relative;
+        }
+        .menu-item.active {
+            opacity: 1;
+            font-weight: 700;
+        }
+        .menu-item.active::after {
+            content: '';
+            position: absolute;
+            bottom: -6px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: white;
+            border-radius: 2px;
+        }
+
+        /* Carousel Layout */
+        #carousel-container {
+            width: 100vw;
+            position: absolute;
+            bottom: 80px; /* Distance from bottom */
+            overflow: visible;
+        }
+
+        #carousel-track {
+            display: flex;
+            align-items: flex-end;
+            gap: 16px;
+            /* Start padding so the first item centers properly */
+            padding-left: 50vw; 
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform;
+        }
+
+        /* Game Tiles (Square like PS5) */
+        .game-tile {
+            width: 140px;
+            height: 140px;
+            border-radius: 18px;
+            background-size: cover;
+            background-position: center;
+            background-color: #111;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            margin-bottom: 20px; /* Space for reflection/shadow */
+        }
+
+        /* Unselected tiles are slightly smaller and faded */
+        .game-tile:not(.active) {
+            transform: scale(0.85);
+            opacity: 0.5;
+        }
+
+        /* Active Tile State */
+        .game-tile.active {
+            transform: scale(1) translateY(-10px);
+            opacity: 1;
+            z-index: 10;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+        }
+        
+        .game-tile.active::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border: 3px solid #fff;
+            border-radius: 22px;
+            pointer-events: none;
+            box-shadow: 0 0 15px rgba(255,255,255,0.4);
+        }
+
+        /* Info Section Animations */
+        #game-info {
+            transition: opacity 0.3s, transform 0.3s;
+            position: absolute;
+            bottom: 260px; /* Above the carousel */
+            left: 50vw; /* Center horizontally */
+            transform: translateX(-50%);
+            width: 100%;
+            text-align: center;
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.4s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(15px) translateX(-50%); }
+            100% { opacity: 1; transform: translateY(0) translateX(-50%); }
+        }
+
+        /* Play Button */
+        .play-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.2s;
+            margin: 0 auto;
+        }
+
+        .play-btn:hover, .play-btn:focus {
+            background: white;
+            color: black;
+            transform: scale(1.05);
+            box-shadow: 0 0 25px rgba(255,255,255,0.3);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="splash-screen" class="fixed inset-0 bg-black flex items-center justify-center">
+        <div class="flex items-center gap-4">
+            <h1 class="text-6xl md:text-8xl font-black tracking-tighter splash-logo brand-text">VEST</h1>
+            <h1 class="text-6xl md:text-8xl font-black tracking-tighter splash-logo text-white">Games</h1>
+        </div>
+    </div>
+
+    <div id="app-container" class="relative w-full h-screen">
+        
+        <!-- Dynamic Backgrounds -->
+        <div id="bg-1" class="bg-layer absolute inset-0 opacity-100"></div>
+        <div id="bg-2" class="bg-layer absolute inset-0 opacity-0"></div>
+        <div id="bg-overlay" class="absolute inset-0 z-10"></div>
+
+        <!-- Top Bar (PS5 Style Menu) -->
+        <div class="absolute top-0 left-0 w-full p-8 flex justify-between items-center z-20">
+            <!-- Left Side: Games/Media -->
+            <div class="flex items-center gap-8 ml-8">
+                <span class="text-xl font-bold brand-text drop-shadow-lg tracking-tight">VEST</span>
+                <div class="flex gap-6 text-lg font-medium text-white">
+                    <span class="menu-item active cursor-pointer">Juegos</span>
+                    <span class="menu-item cursor-pointer">Multimedia</span>
+                </div>
+            </div>
+            
+            <!-- Right Side: Utils & Time -->
+            <div class="flex items-center gap-6 mr-8 text-white/90">
+                <!-- Search Icon -->
+                <svg class="w-6 h-6 hover:text-white cursor-pointer transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <!-- Settings Icon -->
+                <svg class="w-6 h-6 hover:text-white cursor-pointer transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <!-- Avatar -->
+                <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-[#9b2cac] to-[#d1369a] border border-white/50 cursor-pointer"></div>
+                <!-- Clock -->
+                <div id="clock" class="text-xl font-medium tracking-wide">00:00</div>
+            </div>
+        </div>
+
+        <div id="game-info" class="z-20 pointer-events-auto">
+            <h2 id="game-title" class="text-4xl md:text-5xl font-bold mb-6 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] text-white tracking-tight">
+                Cargando...
+            </h2>
+            <button id="play-btn" class="play-btn text-white px-12 py-3 rounded-full font-semibold text-lg flex items-center justify-center gap-3">
+                <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                Jugar
+            </button>
+        </div>
+
+        <div id="carousel-container" class="z-30">
+            <div id="carousel-track">
+                <!-- Tiles injected via JS -->
+            </div>
+        </div>
+        
+        <!-- Iframe Overlay Container -->
+        <div id="iframe-overlay" class="hidden absolute inset-0 z-[10000] bg-black">
+            <button id="close-iframe" class="absolute top-6 right-6 z-50 text-white bg-white/10 hover:bg-white/30 backdrop-blur-md border border-white/20 px-6 py-2 rounded-full font-bold transition">
+                Cerrar Juego
+            </button>
+            <iframe id="game-iframe" src="" class="w-full h-full border-none"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Array of games with REAL images (Steam CDN, Wikipedia Commons, etc.)
+        const games = [
+            { title: "BO1 Zombies", url: "https://vel.gg/bo1z", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/42700/header.jpg" },
+            { title: "Moon", url: "https://moon-zombies.pages.dev", img: "https://upload.wikimedia.org/wikipedia/en/0/0c/Call_of_Duty_Black_Ops_box_art.png" },
+            { title: "Kino der Toten", url: "https://kino-der-toten.pages.dev", img: "https://upload.wikimedia.org/wikipedia/en/0/0c/Call_of_Duty_Black_Ops_box_art.png" },
+            { title: "BO3 Cheese Cube", url: "https://cheese-cube.pages.dev", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/311210/header.jpg" },
+            { title: "Black Ops 2", url: "https://vibeslops.luckeysystems.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/202970/header.jpg" },
+            { title: "Modern Warfare 2", url: "https://ovz-game-production.up.railway.app", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/10180/header.jpg" },
+            { title: "Skate 3", url: "https://skate.aaddpp.lol", img: "https://upload.wikimedia.org/wikipedia/en/6/6b/Skate_3_cover.jpg" },
+            { title: "Skate Rust", url: "https://global-terror.net", img: "https://upload.wikimedia.org/wikipedia/en/6/6b/Skate_3_cover.jpg" },
+            { title: "CS Surf", url: "https://surfd.net", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/240/header.jpg" },
+            { title: "Halo CE", url: "https://mitchellhynes.com/halo", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1064220/header.jpg" },
+            { title: "Halo CE mobile", url: "https://hcemobile.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1064220/header.jpg" },
+            { title: "PES 6", url: "https://pes6.optijuegos.net", img: "https://upload.wikimedia.org/wikipedia/en/d/db/Pro_Evolution_Soccer_6_cover.jpg" },
+            { title: "GTA 5", url: "https://fiveplay.lol/", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/271590/header.jpg" },
+            { title: "GTA Vice City", url: "https://joncodeofficial.github.io/gta-vice-city-wasm", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/12110/header.jpg" },
+            { title: "The Simpsons: Hit & Run", url: "https://shar-wasm.cjoseph.workers.dev/?skipmovie", img: "https://upload.wikimedia.org/wikipedia/en/9/90/The_Simpsons%E2%80%93Hit_%26_Run_cover.jpg" },
+            { title: "Quake 1", url: "https://q1.pieter.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2310/header.jpg" },
+            { title: "Quake 2", url: "https://q2.pieter.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2320/header.jpg" },
+            { title: "Quake 3", url: "https://q3.pieter.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/2200/header.jpg" },
+            { title: "Return to Castle Wolfenstein", url: "https://rtcw.pieter.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/9000/header.jpg" },
+            { title: "Unreal Tournament", url: "https://ut.pieter.com", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/13240/header.jpg" },
+            { title: "Half Life", url: "https://pixelsuft.github.io/hl/", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/70/header.jpg" },
+            { title: "Half Life / CS 1.6", url: "https://x8bitrain.github.io/webXash/", img: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/10/header.jpg" },
+            { title: "Diablo", url: "https://johnimril.github.io/diablo_web/", img: "https://upload.wikimedia.org/wikipedia/en/3/3a/Diablo_Coverart.png" },
+            { title: "Hedgewars", url: "https://webwars.link", img: "https://upload.wikimedia.org/wikipedia/commons/4/4b/Hedgewars-0.9.19.png" },
+            { title: "More GTA / Minecraft", url: "https://wasmarcade.com/", img: "https://upload.wikimedia.org/wikipedia/en/5/51/Minecraft_cover.png" }
+        ];
+
+        let activeIndex = 0;
+        let isAppReady = false;
+        let activeBgLayer = 1;
+
+        const track = document.getElementById('carousel-track');
+        const titleEl = document.getElementById('game-title');
+        const playBtn = document.getElementById('play-btn');
+        const bg1 = document.getElementById('bg-1');
+        const bg2 = document.getElementById('bg-2');
+        const infoContainer = document.getElementById('game-info');
+        
+        // Elementos del Iframe
+        const iframeOverlay = document.getElementById('iframe-overlay');
+        const gameIframe = document.getElementById('game-iframe');
+        const closeIframeBtn = document.getElementById('close-iframe');
+
+        function updateClock() {
+            const now = new Date();
+            let h = now.getHours();
+            let m = now.getMinutes();
+            const ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            m = m < 10 ? '0' + m : m;
+            document.getElementById('clock').innerText = `${h}:${m} ${ampm}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        function initCarousel() {
+            games.forEach((game, index) => {
+                const tile = document.createElement('div');
+                tile.className = 'game-tile';
+                tile.id = `tile-${index}`;
+                // Set the real game image
+                tile.style.backgroundImage = `url('${game.img}')`;
+                
+                // Click to focus or play
+                tile.addEventListener('click', () => {
+                    if (!isAppReady) return;
+                    if (activeIndex === index) {
+                        launchGame(game.url); 
+                    } else {
+                        setFocus(index); 
+                    }
+                });
+
+                track.appendChild(tile);
+            });
+        }
+
+        function setFocus(index) {
+            if (index < 0 || index >= games.length) return;
+            
+            const oldTile = document.getElementById(`tile-${activeIndex}`);
+            if (oldTile) oldTile.classList.remove('active');
+
+            activeIndex = index;
+            const newTile = document.getElementById(`tile-${activeIndex}`);
+            if (newTile) newTile.classList.add('active');
+
+            const game = games[activeIndex];
+
+            // Re-trigger info animation
+            infoContainer.classList.remove('fade-in-up');
+            void infoContainer.offsetWidth; // Trigger DOM reflow
+            
+            titleEl.innerText = game.title;
+            infoContainer.classList.add('fade-in-up');
+
+            updateBackground(game);
+            centerTrack();
+        }
+
+        function centerTrack() {
+            const activeTile = document.getElementById(`tile-${activeIndex}`);
+            if (!activeTile) return;
+
+            // Center calculation considering viewport and tile dimensions
+            const screenCenter = window.innerWidth / 2;
+            // Get the center of the tile relative to its parent track container
+            const tileCenterOffset = activeTile.offsetLeft + (activeTile.offsetWidth / 2);
+            // Translate the track leftward to align tile center with screen center
+            const translateX = screenCenter - tileCenterOffset;
+
+            track.style.transform = `translateX(${translateX}px)`;
+        }
+
+        function updateBackground(game) {
+            // Apply real game image to background
+            if (activeBgLayer === 1) {
+                bg2.style.backgroundImage = `url('${game.img}')`;
+                bg2.style.opacity = '1';
+                bg1.style.opacity = '0';
+                activeBgLayer = 2;
+            } else {
+                bg1.style.backgroundImage = `url('${game.img}')`;
+                bg1.style.opacity = '1';
+                bg2.style.opacity = '0';
+                activeBgLayer = 1;
+            }
+        }
+
+        function launchGame(url) {
+            // Se proyecta la página en el iframe en lugar de una nueva pestaña
+            gameIframe.src = url;
+            iframeOverlay.classList.remove('hidden');
+        }
+
+        // Lógica para cerrar el Iframe
+        closeIframeBtn.addEventListener('click', () => {
+            gameIframe.src = '';
+            iframeOverlay.classList.add('hidden');
+        });
+
+        playBtn.addEventListener('click', () => {
+            if(isAppReady) launchGame(games[activeIndex].url);
+        });
+
+        // Left/Right arrow key navigation (Crucial Requirement)
+        document.addEventListener('keydown', (e) => {
+            // Evitar mover el carrusel si el iframe está abierto
+            if (!isAppReady || !iframeOverlay.classList.contains('hidden')) return;
+
+            if (e.key === 'ArrowRight') {
+                e.preventDefault();
+                if (activeIndex < games.length - 1) setFocus(activeIndex + 1);
+            } else if (e.key === 'ArrowLeft') {
+                e.preventDefault();
+                if (activeIndex > 0) setFocus(activeIndex - 1);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                launchGame(games[activeIndex].url);
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            if (isAppReady) centerTrack();
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initCarousel();
+            // Initially render focus instantly without transitions messing up
+            setFocus(0); 
+            
+            // Splash Screen timing
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                splash.style.opacity = '0';
+                
+                setTimeout(() => {
+                    splash.style.visibility = 'hidden';
+                    splash.style.pointerEvents = 'none';
+                    isAppReady = true;
+                    centerTrack(); // Ensure centered after layout locks in
+                }, 1200);
+            }, 3000); 
+        });
+    </script>
+</body>
+</html>
